@@ -9,6 +9,8 @@ import SwiftUI
 import GiphyUISDK
 import ExyteMediaPicker
 
+public typealias TextMessageHeaderBuilderClosure = (_ message: Message) -> AnyView
+
 public typealias MediaPickerParameters = SelectionParamsHolder
 
 public enum ChatType: CaseIterable, Sendable {
@@ -83,7 +85,9 @@ public struct ChatView<MessageContent: View, InputViewContent: View, MenuAction:
     var reactionDelegate: ReactionDelegate?
 
     // MARK: - View builders
-    
+
+    var textMessageHeaderBuilder: TextMessageHeaderBuilderClosure? = nil
+
     /// provide custom message view builder
     var messageBuilder: MessageBuilderClosure? = nil
     
@@ -151,6 +155,7 @@ public struct ChatView<MessageContent: View, InputViewContent: View, MenuAction:
                 replyMode: ReplyMode = .quote,
                 didSendMessage: @escaping (DraftMessage) -> Void,
                 reactionDelegate: ReactionDelegate? = nil,
+                textMessageHeaderBuilder: @escaping TextMessageHeaderBuilderClosure,
                 messageBuilder: @escaping MessageBuilderClosure,
                 inputViewBuilder: @escaping InputViewBuilderClosure,
                 messageMenuAction: MessageMenuActionClosure?,
@@ -160,6 +165,7 @@ public struct ChatView<MessageContent: View, InputViewContent: View, MenuAction:
         self.reactionDelegate = reactionDelegate
         self.sections = ChatView.mapMessages(messages, chatType: chatType, replyMode: replyMode)
         self.ids = messages.map { $0.id }
+        self.textMessageHeaderBuilder = textMessageHeaderBuilder
         self.messageBuilder = messageBuilder
         self.inputViewBuilder = inputViewBuilder
         self.messageMenuAction = messageMenuAction
@@ -321,6 +327,7 @@ public struct ChatView<MessageContent: View, InputViewContent: View, MenuAction:
             isScrolledToBottom: $isScrolledToBottom,
             shouldScrollToTop: $shouldScrollToTop,
             tableContentHeight: $tableContentHeight,
+            textMessageHeaderBuilder: textMessageHeaderBuilder,
             messageBuilder: messageBuilder,
             mainHeaderBuilder: mainHeaderBuilder,
             headerBuilder: headerBuilder,
@@ -426,7 +433,11 @@ public struct ChatView<MessageContent: View, InputViewContent: View, MenuAction:
             )
         ) {
             ChatMessageView(
-                viewModel: viewModel, messageBuilder: messageBuilder, row: row, chatType: type,
+                viewModel: viewModel,
+                textMessageHeaderBuilder: textMessageHeaderBuilder,
+                messageBuilder: messageBuilder,
+                row: row,
+                chatType: type,
                 avatarSize: avatarSize, tapAvatarClosure: nil, messageStyler: messageStyler,
                 isDisplayingMessageMenu: true, showMessageTimeView: showMessageTimeView,
                 messageLinkPreviewLimit: messageLinkPreviewLimit, messageFont: messageFont

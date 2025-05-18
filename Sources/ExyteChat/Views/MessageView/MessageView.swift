@@ -24,17 +24,18 @@ struct MessageView: View {
     let showMessageTimeView: Bool
     let messageLinkPreviewLimit: Int
     var font: UIFont
+    let textMessageHeaderBuilder: TextMessageHeaderBuilderClosure?
 
     @State var avatarViewSize: CGSize = .zero
     @State var statusSize: CGSize = .zero
     @State var giphyAspectRatio: CGFloat = 1
     @State var timeSize: CGSize = .zero
     @State var messageSize: CGSize = .zero
-    
+
     // The size of our reaction bubbles are based on the users font size,
     // Therefore we need to capture it's rendered size in order to place it correctly
     @State var bubbleSize: CGSize = .zero
-    
+
     static let widthWithMedia: CGFloat = 204
     static let horizontalNoAvatarPadding: CGFloat = 8
     static let horizontalAvatarPadding: CGFloat = 8
@@ -144,22 +145,22 @@ struct MessageView: View {
                 reactionsView(message)
                     .zIndex(1)
             }
-            
+
             VStack(alignment: .leading, spacing: 0) {
-                
+
                 if let giphyMediaId = message.giphyMediaId {
                     giphyView(giphyMediaId)
                 }
-                
+
                 if !message.attachments.isEmpty {
                     attachmentsView(message)
                 }
-                
+
                 if !message.text.isEmpty {
                     textWithTimeView(message)
                         .font(Font(font))
                 }
-                
+
                 if let recording = message.recording {
                     VStack(alignment: .trailing, spacing: 8) {
                         recordingView(recording)
@@ -243,7 +244,7 @@ struct MessageView: View {
         }
         .contentShape(Rectangle())
     }
-    
+
     @ViewBuilder
     func giphyView(_ giphyMediaId: String) -> some View {
         GiphyMediaView(id: giphyMediaId, aspectRatio: $giphyAspectRatio)
@@ -262,31 +263,37 @@ struct MessageView: View {
         let timeView = messageTimeView()
             .padding(.trailing, 12)
 
-        Group {
-            switch dateArrangement {
-            case .hstack:
-                HStack(alignment: .lastTextBaseline, spacing: 12) {
-                    messageView
-                    if !message.attachments.isEmpty {
-                        Spacer()
-                    }
-                    timeView
-                }
-                .padding(.vertical, 8)
-            case .vstack:
-                VStack(alignment: .trailing, spacing: 4) {
-                    messageView
-                    timeView
-                }
-                .padding(.vertical, 8)
-            case .overlay:
-                messageView
-                    .padding(.vertical, 8)
-                    .overlay(alignment: .bottomTrailing) {
+        VStack {
+            textMessageHeaderBuilder?(message)
+
+            Group {
+                switch dateArrangement {
+                case .hstack:
+                    HStack(alignment: .lastTextBaseline, spacing: 12) {
+                        messageView
+                        if !message.attachments.isEmpty {
+                            Spacer()
+                        }
                         timeView
-                            .padding(.vertical, 8)
                     }
+                    .padding(.vertical, 8)
+                case .vstack:
+                    VStack(alignment: .trailing, spacing: 4) {
+                        messageView
+                        timeView
+                    }
+                    .padding(.vertical, 8)
+                case .overlay:
+                    messageView
+                        .padding(.vertical, 8)
+                        .overlay(alignment: .bottomTrailing) {
+                            timeView
+                                .padding(.vertical, 8)
+                        }
+                }
             }
+
+
         }
     }
 
@@ -382,7 +389,7 @@ struct MessageView_Preview: PreviewProvider {
         status: .read,
         text: extraShortText
     )
-    
+
     static var previews: some View {
         ZStack {
             Color.yellow.ignoresSafeArea()
@@ -399,7 +406,8 @@ struct MessageView_Preview: PreviewProvider {
                 isDisplayingMessageMenu: false,
                 showMessageTimeView: true,
                 messageLinkPreviewLimit: 8,
-                font: UIFontMetrics.default.scaledFont(for: UIFont.systemFont(ofSize: 15))
+                font: UIFontMetrics.default.scaledFont(for: UIFont.systemFont(ofSize: 15)),
+                textMessageHeaderBuilder: {message in AnyView(Text(""))}
             )
         }
     }

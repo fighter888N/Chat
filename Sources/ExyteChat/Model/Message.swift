@@ -58,6 +58,8 @@ public struct Message: Identifiable, Hashable, Sendable {
 
     public var triggerRedraw: UUID?
 
+    public var externalData: AnyHashable?
+
     public init(id: String,
                 user: User,
                 status: Status? = nil,
@@ -67,7 +69,8 @@ public struct Message: Identifiable, Hashable, Sendable {
                 giphyMediaId: String? = nil,
                 reactions: [Reaction] = [],
                 recording: Recording? = nil,
-                replyMessage: ReplyMessage? = nil) {
+                replyMessage: ReplyMessage? = nil,
+                externalData: AnyHashable? = nil) {
 
         self.id = id
         self.user = user
@@ -79,6 +82,7 @@ public struct Message: Identifiable, Hashable, Sendable {
         self.reactions = reactions
         self.recording = recording
         self.replyMessage = replyMessage
+        self.externalData = externalData
     }
 
     public static func makeMessage(
@@ -90,7 +94,7 @@ public struct Message: Identifiable, Hashable, Sendable {
                 guard let thumbnailURL = await media.getThumbnailURL() else {
                     return nil
                 }
-                
+
                 switch media.type {
                 case .image:
                     return Attachment(id: UUID().uuidString, url: thumbnailURL, type: .image)
@@ -101,9 +105,9 @@ public struct Message: Identifiable, Hashable, Sendable {
                     return Attachment(id: UUID().uuidString, thumbnail: thumbnailURL, full: fullURL, type: .video)
                 }
             }
-            
+
             let giphyMediaId = draft.giphyMedia?.id
-            
+
             return Message(
                 id: id,
                 user: user,
@@ -135,7 +139,8 @@ extension Message: Equatable {
         lhs.attachments == rhs.attachments &&
         lhs.reactions == rhs.reactions &&
         lhs.recording == rhs.recording &&
-        lhs.replyMessage == rhs.replyMessage
+        lhs.replyMessage == rhs.replyMessage &&
+        lhs.externalData == rhs.externalData
     }
 }
 

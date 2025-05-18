@@ -24,6 +24,7 @@ struct UIList<MessageContent: View, InputView: View>: UIViewRepresentable {
     @Binding var shouldScrollToTop: () -> ()
     @Binding var tableContentHeight: CGFloat
 
+    var textMessageHeaderBuilder: TextMessageHeaderBuilderClosure?
     var messageBuilder: MessageBuilderClosure?
     var mainHeaderBuilder: (()->AnyView)?
     var headerBuilder: ((Date)->AnyView)?
@@ -362,6 +363,7 @@ struct UIList<MessageContent: View, InputView: View>: UIViewRepresentable {
         Coordinator(
             viewModel: viewModel, inputViewModel: inputViewModel,
             isScrolledToBottom: $isScrolledToBottom, isScrolledToTop: $isScrolledToTop,
+            textMessageHeaderBuilder: textMessageHeaderBuilder,
             messageBuilder: messageBuilder, mainHeaderBuilder: mainHeaderBuilder,
             headerBuilder: headerBuilder, type: type, showDateHeaders: showDateHeaders,
             avatarSize: avatarSize, showMessageMenuOnLongPress: showMessageMenuOnLongPress,
@@ -380,6 +382,7 @@ struct UIList<MessageContent: View, InputView: View>: UIViewRepresentable {
         @Binding var isScrolledToBottom: Bool
         @Binding var isScrolledToTop: Bool
 
+        let textMessageHeaderBuilder: TextMessageHeaderBuilderClosure?
         let messageBuilder: MessageBuilderClosure?
         let mainHeaderBuilder: (()->AnyView)?
         let headerBuilder: ((Date)->AnyView)?
@@ -410,6 +413,7 @@ struct UIList<MessageContent: View, InputView: View>: UIViewRepresentable {
         init(
             viewModel: ChatViewModel, inputViewModel: InputViewModel,
             isScrolledToBottom: Binding<Bool>, isScrolledToTop: Binding<Bool>,
+            textMessageHeaderBuilder: TextMessageHeaderBuilderClosure?,
             messageBuilder: MessageBuilderClosure?, mainHeaderBuilder: (() -> AnyView)?,
             headerBuilder: ((Date) -> AnyView)?, type: ChatType, showDateHeaders: Bool,
             avatarSize: CGFloat, showMessageMenuOnLongPress: Bool,
@@ -423,6 +427,7 @@ struct UIList<MessageContent: View, InputView: View>: UIViewRepresentable {
             self.inputViewModel = inputViewModel
             self._isScrolledToBottom = isScrolledToBottom
             self._isScrolledToTop = isScrolledToTop
+            self.textMessageHeaderBuilder = textMessageHeaderBuilder
             self.messageBuilder = messageBuilder
             self.mainHeaderBuilder = mainHeaderBuilder
             self.headerBuilder = headerBuilder
@@ -563,11 +568,17 @@ struct UIList<MessageContent: View, InputView: View>: UIViewRepresentable {
             let row = sections[indexPath.section].rows[indexPath.row]
             tableViewCell.contentConfiguration = UIHostingConfiguration {
                 ChatMessageView(
-                    viewModel: viewModel, messageBuilder: messageBuilder, row: row, chatType: type,
-                    avatarSize: avatarSize, tapAvatarClosure: tapAvatarClosure,
-                    messageStyler: messageStyler, isDisplayingMessageMenu: false,
+                    viewModel: viewModel,
+                    textMessageHeaderBuilder: textMessageHeaderBuilder, messageBuilder: messageBuilder,
+                    row: row,
+                    chatType: type,
+                    avatarSize: avatarSize,
+                    tapAvatarClosure: tapAvatarClosure,
+                    messageStyler: messageStyler,
+                    isDisplayingMessageMenu: false,
                     showMessageTimeView: showMessageTimeView,
-                    messageLinkPreviewLimit: messageLinkPreviewLimit, messageFont: messageFont
+                    messageLinkPreviewLimit: messageLinkPreviewLimit,
+                    messageFont: messageFont
                 )
                 .transition(.scale)
                 .background(MessageMenuPreferenceViewSetter(id: row.id))

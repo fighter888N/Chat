@@ -13,6 +13,8 @@ struct ChatMessageView<MessageContent: View>: View {
 
     @ObservedObject var viewModel: ChatViewModel
 
+    var textMessageHeaderBuilder: TextMessageHeaderBuilderClosure?
+
     var messageBuilder: MessageBuilderClosure?
 
     let row: MessageRow
@@ -26,6 +28,7 @@ struct ChatMessageView<MessageContent: View>: View {
     let messageFont: UIFont
 
     var body: some View {
+
         Group {
             if let messageBuilder = messageBuilder {
                 messageBuilder(
@@ -50,7 +53,9 @@ struct ChatMessageView<MessageContent: View>: View {
                     isDisplayingMessageMenu: isDisplayingMessageMenu,
                     showMessageTimeView: showMessageTimeView,
                     messageLinkPreviewLimit: messageLinkPreviewLimit,
-                    font: messageFont)
+                    font: messageFont,
+                    textMessageHeaderBuilder: textMessageHeaderBuilder
+                )
             }
         }
         .id(row.message.id)
