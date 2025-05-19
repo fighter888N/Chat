@@ -59,6 +59,7 @@ public struct Message: Identifiable, Hashable, Sendable {
     public var triggerRedraw: UUID?
 
     public var externalData: AnyHashable?
+    public var externalId: String?
 
     public init(id: String,
                 user: User,
@@ -70,7 +71,9 @@ public struct Message: Identifiable, Hashable, Sendable {
                 reactions: [Reaction] = [],
                 recording: Recording? = nil,
                 replyMessage: ReplyMessage? = nil,
-                externalData: AnyHashable? = nil) {
+                externalData: AnyHashable? = nil,
+                externalId: String? = nil
+    ) {
 
         self.id = id
         self.user = user
@@ -83,6 +86,7 @@ public struct Message: Identifiable, Hashable, Sendable {
         self.recording = recording
         self.replyMessage = replyMessage
         self.externalData = externalData
+        self.externalId = externalId
     }
 
     public static func makeMessage(
